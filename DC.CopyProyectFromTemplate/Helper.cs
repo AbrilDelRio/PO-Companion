@@ -9,14 +9,14 @@ namespace DC.CopyProyectFromTemplate
 {
     public class Helper
     {
-        private readonly IOrganizationService service = null;
+        private readonly IOrganizationService service;
         private readonly string recordUrlPrefix;
         private readonly string sourceRecordUrlPrefix;
         private readonly string environmentKey;
 
         /// <param name="dataverseUrl">Environment the service is connected to (record links of the project this log is about).</param>
         /// <param name="sourceDataverseUrl">Environment the SOURCE project lives in, when it is not the same one.</param>
-        public Helper(IOrganizationService service, string dataverseUrl, string sourceDataverseUrl = null)
+        public Helper(IOrganizationService service, string dataverseUrl, string? sourceDataverseUrl = null)
         {
             this.service = service ?? throw new ArgumentNullException(nameof(service));
 
@@ -56,7 +56,7 @@ namespace DC.CopyProyectFromTemplate
         /// <summary>mfd_description accepts at most 2000 characters; a longer text is refused by Dataverse.</summary>
         public const int MaxLogDescriptionLength = 2000;
 
-        public static string FitLogDescription(string text)
+        public static string? FitLogDescription(string? text)
         {
             if (text == null || text.Length <= MaxLogDescriptionLength)
             {
@@ -105,7 +105,7 @@ namespace DC.CopyProyectFromTemplate
             return newLog;
         }
 
-        public Entity getPOCopyProjectTaskRelation(EntityReference targeProject, EntityReference targetTask)
+        public Entity? getPOCopyProjectTaskRelation(EntityReference targeProject, EntityReference targetTask)
         {
             QueryExpression query = new QueryExpression("mfd_pocopyprojecttaskrelation")
             {

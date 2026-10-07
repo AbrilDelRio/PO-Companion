@@ -18,7 +18,7 @@ namespace DC.CopyProyectFromTemplate
                 ReturnTotalRecordCount = false
             };
 
-            List<Entity> results = null;
+            List<Entity>? results = null;
 
             while (true)
             {

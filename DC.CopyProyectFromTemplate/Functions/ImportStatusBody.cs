@@ -149,10 +149,13 @@ public static class ImportStatusBody
     /// <summary>Pending, Running, Suspended and ContinuedAsNew still have work ahead.</summary>
     public static bool IsFinished(OrchestrationRuntimeStatus status)
     {
+        // ContinuedAsNew is obsolete but can still be reported by older runtimes; it is not finished.
+#pragma warning disable CS0618
         return status is not (OrchestrationRuntimeStatus.Pending
             or OrchestrationRuntimeStatus.Running
             or OrchestrationRuntimeStatus.Suspended
             or OrchestrationRuntimeStatus.ContinuedAsNew);
+#pragma warning restore CS0618
     }
 
     /// <summary>

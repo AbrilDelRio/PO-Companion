@@ -7,8 +7,8 @@ namespace DC.CopyProyectFromTemplate
 {
     public class ResourceAssignmentsClass
     {
-        private readonly IOrganizationService sourceService = null;
-        private readonly Helper helper = null;
+        private readonly IOrganizationService sourceService;
+        private readonly Helper helper;
 
         public ResourceAssignmentsClass(IOrganizationService service, string dataverseUrl)
             : this(service, service, dataverseUrl, dataverseUrl)
@@ -100,7 +100,7 @@ namespace DC.CopyProyectFromTemplate
 
                     if (sourceTeamMember != null)
                     {
-                        EntityReference targetTeamMember;
+                        EntityReference? targetTeamMember;
                         if (ctx.TeamMemberMap.TryGetValue(sourceTeamMember.Id, out targetTeamMember))
                         {
                             resourceAssignment["msdyn_projectteamid"] = targetTeamMember;

@@ -16,14 +16,14 @@ namespace DC.CopyProyectFromTemplate
 
     public class PoConfiguration
     {
-        private readonly IOrganizationService service = null;
+        private readonly IOrganizationService service;
 
         public PoConfiguration(IOrganizationService service)
         {
             this.service = service;
         }
 
-        public Entity getPOConfiguration(string poCodeConfiguration)
+        public Entity? getPOConfiguration(string poCodeConfiguration)
         {
             QueryExpression query = new QueryExpression("mfd_pocopyprojectconfiguration")
             {
@@ -32,7 +32,7 @@ namespace DC.CopyProyectFromTemplate
                 TopCount = 1
             };
             query.Criteria.AddCondition("mfd_code", ConditionOperator.Equal, poCodeConfiguration);
-            Entity entityPoConfig = service.RetrieveMultiple(query).Entities.FirstOrDefault();
+            Entity? entityPoConfig = service.RetrieveMultiple(query).Entities.FirstOrDefault();
             return entityPoConfig;
         }
 

@@ -9,11 +9,11 @@ namespace DC.CopyProyectFromTemplate
     {
         private static readonly List<Entity> NoChildren = new List<Entity>(0);
         private readonly Dictionary<Guid, Guid> taskMapping = new Dictionary<Guid, Guid>();
-        private readonly IOrganizationService service = null;
-        private readonly IOrganizationService sourceService = null;
-        private readonly Helper helper = null;
-        private readonly Helper sourceHelper = null;
-        private readonly ResourceAssignmentsClass resourceAssignments = null;
+        private readonly IOrganizationService service;
+        private readonly IOrganizationService sourceService;
+        private readonly Helper helper;
+        private readonly Helper sourceHelper;
+        private readonly ResourceAssignmentsClass resourceAssignments;
 
         public ProjectTaskClass(IOrganizationService service, string dataverseUrl)
             : this(service, service, dataverseUrl, dataverseUrl)
@@ -104,7 +104,7 @@ namespace DC.CopyProyectFromTemplate
                     continue;
                 }
 
-                List<Entity> siblings;
+                List<Entity>? siblings;
                 if (!childrenByParent.TryGetValue(parent.Id, out siblings))
                 {
                     siblings = new List<Entity>();
@@ -140,7 +140,7 @@ namespace DC.CopyProyectFromTemplate
                     continue;
                 }
 
-                List<Entity> labels;
+                List<Entity>? labels;
                 if (!labelsByTask.TryGetValue(taskRef.Id, out labels))
                 {
                     labels = new List<Entity>(1);
@@ -153,7 +153,7 @@ namespace DC.CopyProyectFromTemplate
             return labelsByTask;
         }
 
-        internal void CopyTaskRecursive(Entity templateTask, EntityReference newParentTask, CopyContext ctx, bool recurse)
+        internal void CopyTaskRecursive(Entity templateTask, EntityReference? newParentTask, CopyContext ctx, bool recurse)
         {
             try
             {
@@ -189,7 +189,7 @@ namespace DC.CopyProyectFromTemplate
                 ctx.Writer.Create(newTask);
 
                 EntityReference newTaskRef = newTask.ToEntityReference();
-                List<Entity> templateLabels;
+                List<Entity>? templateLabels;
                 if (ctx.LabelsByTask.TryGetValue(templateTask.Id, out templateLabels))
                 {
                     for (int i = 0; i < templateLabels.Count; i++)
@@ -205,7 +205,7 @@ namespace DC.CopyProyectFromTemplate
                         else
                         {
                             // Labels are records of their own: the one with the same name in the destination.
-                            EntityReference label = ctx.Resolver.Resolve(templateLabels[i].GetAttributeValue<EntityReference>("msdyn_projectlabelid"));
+                            EntityReference? label = ctx.Resolver.Resolve(templateLabels[i].GetAttributeValue<EntityReference>("msdyn_projectlabelid"));
                             if (label == null)
                             {
                                 continue;
@@ -226,7 +226,7 @@ namespace DC.CopyProyectFromTemplate
                     return;
                 }
 
-                List<Entity> children;
+                List<Entity>? children;
                 if (!ctx.ChildrenByParent.TryGetValue(templateTask.Id, out children))
                 {
                     children = NoChildren;
@@ -405,7 +405,7 @@ namespace DC.CopyProyectFromTemplate
             }
         }
 
-        internal void CopyDependencies(Guid sourceProjectId, Entity newProject, BatchWriter writer, ReferenceResolver resolver = null)
+        internal void CopyDependencies(Guid sourceProjectId, Entity newProject, BatchWriter writer, ReferenceResolver? resolver = null)
         {
             try
             {

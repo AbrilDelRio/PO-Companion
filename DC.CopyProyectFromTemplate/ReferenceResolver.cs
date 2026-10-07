@@ -38,8 +38,8 @@ namespace DC.CopyProyectFromTemplate
 
         private readonly IOrganizationService source;
         private readonly IOrganizationService target;
-        private readonly Dictionary<string, EntityReference> resolved = new Dictionary<string, EntityReference>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, string> primaryNameAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, EntityReference?> resolved = new Dictionary<string, EntityReference?>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string?> primaryNameAttributes = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> reported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public ReferenceResolver(IOrganizationService source, IOrganizationService target)
@@ -64,7 +64,7 @@ namespace DC.CopyProyectFromTemplate
         }
 
         /// <summary>Returns the destination equivalent of a source reference, or null when there is none.</summary>
-        public EntityReference Resolve(EntityReference sourceReference)
+        public EntityReference? Resolve(EntityReference? sourceReference)
         {
             if (sourceReference == null)
             {
@@ -73,13 +73,13 @@ namespace DC.CopyProyectFromTemplate
 
             string key = sourceReference.LogicalName + ":" + sourceReference.Id.ToString("N");
 
-            EntityReference cached;
+            EntityReference? cached;
             if (resolved.TryGetValue(key, out cached))
             {
                 return cached;
             }
 
-            EntityReference result = ResolveCore(sourceReference);
+            EntityReference? result = ResolveCore(sourceReference);
             resolved[key] = result;
             return result;
         }
@@ -97,7 +97,7 @@ namespace DC.CopyProyectFromTemplate
 
                 if (value is EntityReference reference)
                 {
-                    EntityReference mapped = Resolve(reference);
+                    EntityReference? mapped = Resolve(reference);
 
                     if (mapped == null)
                     {
@@ -116,7 +116,7 @@ namespace DC.CopyProyectFromTemplate
             }
         }
 
-        private EntityReference ResolveCore(EntityReference sourceReference)
+        private EntityReference? ResolveCore(EntityReference sourceReference)
         {
             string logicalName = sourceReference.LogicalName;
 
@@ -141,9 +141,9 @@ namespace DC.CopyProyectFromTemplate
             }
         }
 
-        private EntityReference ResolveUser(EntityReference sourceReference)
+        private EntityReference? ResolveUser(EntityReference sourceReference)
         {
-            Entity user = TryRetrieve(
+            Entity? user = TryRetrieve(
                 source,
                 "systemuser",
                 sourceReference.Id,
@@ -155,7 +155,7 @@ namespace DC.CopyProyectFromTemplate
                 return null;
             }
 
-            EntityReference match = null;
+            EntityReference? match = null;
 
             Guid? entraObjectId = user.GetAttributeValue<Guid?>("azureactivedirectoryobjectid");
             if (entraObjectId.HasValue && entraObjectId.Value != Guid.Empty)
@@ -184,9 +184,9 @@ namespace DC.CopyProyectFromTemplate
             return match;
         }
 
-        private EntityReference ResolveBookableResource(EntityReference sourceReference)
+        private EntityReference? ResolveBookableResource(EntityReference sourceReference)
         {
-            Entity resource = TryRetrieve(source, "bookableresource", sourceReference.Id, new ColumnSet("name", "userid"));
+            Entity? resource = TryRetrieve(source, "bookableresource", sourceReference.Id, new ColumnSet("name", "userid"));
 
             if (resource == null)
             {
@@ -194,13 +194,13 @@ namespace DC.CopyProyectFromTemplate
                 return null;
             }
 
-            EntityReference sourceUser = resource.GetAttributeValue<EntityReference>("userid");
+            EntityReference? sourceUser = resource.GetAttributeValue<EntityReference>("userid");
             if (sourceUser != null)
             {
-                EntityReference mappedUser = Resolve(sourceUser);
+                EntityReference? mappedUser = Resolve(sourceUser);
                 if (mappedUser != null)
                 {
-                    EntityReference byUser = FindOne(target, "bookableresource", "userid", mappedUser.Id);
+                    EntityReference? byUser = FindOne(target, "bookableresource", "userid", mappedUser.Id);
                     if (byUser != null)
                     {
                         return byUser;
@@ -209,7 +209,7 @@ namespace DC.CopyProyectFromTemplate
             }
 
             string name = resource.GetAttributeValue<string>("name");
-            EntityReference byName = string.IsNullOrWhiteSpace(name)
+            EntityReference? byName = string.IsNullOrWhiteSpace(name)
                 ? null
                 : FindOne(target, "bookableresource", "name", name);
 
@@ -221,10 +221,10 @@ namespace DC.CopyProyectFromTemplate
             return byName;
         }
 
-        private EntityReference ResolveByName(EntityReference sourceReference)
+        private EntityReference? ResolveByName(EntityReference sourceReference)
         {
             string logicalName = sourceReference.LogicalName;
-            string nameAttribute = GetPrimaryNameAttribute(logicalName);
+            string? nameAttribute = GetPrimaryNameAttribute(logicalName);
 
             if (string.IsNullOrWhiteSpace(nameAttribute))
             {
@@ -232,8 +232,8 @@ namespace DC.CopyProyectFromTemplate
                 return null;
             }
 
-            Entity sourceRecord = TryRetrieve(source, logicalName, sourceReference.Id, new ColumnSet(nameAttribute));
-            string name = sourceRecord == null ? null : sourceRecord.GetAttributeValue<string>(nameAttribute);
+            Entity? sourceRecord = TryRetrieve(source, logicalName, sourceReference.Id, new ColumnSet(nameAttribute));
+            string? name = sourceRecord == null ? null : sourceRecord.GetAttributeValue<string>(nameAttribute);
 
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -241,7 +241,7 @@ namespace DC.CopyProyectFromTemplate
                 return null;
             }
 
-            EntityReference match = FindOne(target, logicalName, nameAttribute, name);
+            EntityReference? match = FindOne(target, logicalName, nameAttribute, name);
 
             if (match == null)
             {
@@ -251,15 +251,15 @@ namespace DC.CopyProyectFromTemplate
             return match;
         }
 
-        private string GetPrimaryNameAttribute(string logicalName)
+        private string? GetPrimaryNameAttribute(string logicalName)
         {
-            string cached;
+            string? cached;
             if (primaryNameAttributes.TryGetValue(logicalName, out cached))
             {
                 return cached;
             }
 
-            string attribute = null;
+            string? attribute = null;
 
             try
             {
@@ -286,7 +286,7 @@ namespace DC.CopyProyectFromTemplate
             return TryRetrieve(target, logicalName, id, new ColumnSet(false)) != null;
         }
 
-        private static Entity TryRetrieve(IOrganizationService service, string logicalName, Guid id, ColumnSet columns)
+        private static Entity? TryRetrieve(IOrganizationService service, string logicalName, Guid id, ColumnSet columns)
         {
             try
             {
@@ -298,7 +298,7 @@ namespace DC.CopyProyectFromTemplate
             }
         }
 
-        private static EntityReference FindOne(IOrganizationService service, string logicalName, string attribute, object value)
+        private static EntityReference? FindOne(IOrganizationService service, string logicalName, string attribute, object value)
         {
             QueryExpression query = new QueryExpression(logicalName)
             {
@@ -311,7 +311,7 @@ namespace DC.CopyProyectFromTemplate
 
             try
             {
-                Entity found = service.RetrieveMultiple(query).Entities.FirstOrDefault();
+                Entity? found = service.RetrieveMultiple(query).Entities.FirstOrDefault();
                 return found == null ? null : new EntityReference(logicalName, found.Id);
             }
             catch (Exception)
