@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+
+    <script type="text/javascript">
+
+    $(function ()
+    {
+        $("#btnPost").click(function()
+        {
+            var localDayOffParameters = new Object();
+            localDayOffParameters.ResourceId = "238EB7BD-1E8E-EA11-A811-000D3A31EF6C";
+            localDayOffParameters.Description = "Test for web";
+            localDayOffParameters.DateOff = "08/05/2020";
+
+
+            if (localDayOffParameters != null)
+            {
+                $.ajax({
+                type: "POST",
+                    url: "https://cclwebapidevsag.azurewebsites.net/api/Session/CreateDayOff",
+                    data: JSON.stringify(localDayOffParameters),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response)
+                    {
+                        if (response != null)
+                        {
+                            var responseObject = JSON.parse(response);
+                            alert(responseObject.ResultText);
+                        }
+                        else
+                        {
+                            alert("Something went wrong");
+                        }
+                    },
+                    failure: function (response)
+                    {
+                        var responseObject = JSON.parse(response);
+                        alert(responseObject.ResultText);
+                    },
+                    error: function (response)
+                    {
+                        var responseObject = JSON.parse(response)
+                        alert(response.ResultText);
+                    }
+                });
+            }
+        });
+        });
+    </script>
+</head>
+<body>
+    <input type="button" id="btnPost" value="Upload test" />
+</body>
+</html>

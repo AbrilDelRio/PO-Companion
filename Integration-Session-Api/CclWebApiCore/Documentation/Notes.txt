@@ -1,0 +1,2 @@
+﻿Build Tool:		VS 2017 (.NET FW 4.6.1)
+Project Type:	Web Application -> Web API (MVC / WebAPI)

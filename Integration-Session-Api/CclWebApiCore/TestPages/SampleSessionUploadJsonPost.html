@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+
+    <script type = "text/javascript"> 
+    $(function ()
+    {
+        $("#btnPost").click(function()
+        {
+            var array = new Array();
+            var sessionUploadInfo = new Object();
+            sessionUploadInfo.ContactSalutation = "Sr";
+            sessionUploadInfo.ContactFirstName = "Jay";
+            sessionUploadInfo.ContactMiddleName = "";
+            sessionUploadInfo.ContactLastName = "Efkay";
+            sessionUploadInfo.ContactSuffix = "Sr";
+            sessionUploadInfo.ContactJobTitle = "Consultant";
+            sessionUploadInfo.ContactCompanyName = "SAGlobal";
+            sessionUploadInfo.ContactPhone = "123-344-1111";
+            sessionUploadInfo.ContactMobilePhone = "345-344-3345";
+            sessionUploadInfo.ContactCompanyName = "shero - United States";
+            sessionUploadInfo.ContactEmail = "mas11252020_1@sherocommerce.com";
+            sessionUploadInfo.ContactAddressLine = "inifinte loop 1";
+            sessionUploadInfo.ContactAddressCity = "Cupertino";
+            sessionUploadInfo.ContactAddressState = "ca";
+            sessionUploadInfo.ContactAddressZipcode = "95014";
+            sessionUploadInfo.ContactAddressCountry = "usa";
+            //sessionUploadInfo.SessionId = "SID-0001084";
+            //sessionUploadInfo.SessionGuid = "39da74c9-7c33-4e1d-8145-fbdee398e3b5";//"9e68011e-9dc6-ea11-a812-000d3a31ef6c";//"6cd24927-46c1-ea11-a812-000d3a5ce810";
+            sessionUploadInfo.RegistrationStatus = "confirmed";
+            //sessionUploadInfo.SessionTrackGuid = "93dd4fa4-0da5-ea11-a812-000d3a31ef6c";
+            //sessionUploadInfo.SessionTrackId = "SampleSessionTrackId";
+            sessionUploadInfo.NoteTitle = "Note title";
+            sessionUploadInfo.Note = "note body";
+            sessionUploadInfo.OrderId = "SO0000003884";
+            sessionUploadInfo.AgentId = "Hugh Smith";
+            sessionUploadInfo.ChangeReason = "No reason at all";
+            sessionUploadInfo.TransactionType = "New"; //Transfer OR Pending OR Cancel OR New
+            sessionUploadInfo.RegistrationId = ""; //Session registration id
+
+            array.push(sessionUploadInfo);
+
+            /*
+            var sessionUploadInfo = new Object();
+            sessionUploadInfo.ContactSalutation = "Sr";
+            sessionUploadInfo.ContactFirstName = "Brian";
+            sessionUploadInfo.ContactMiddleName = "N";
+            sessionUploadInfo.ContactLastName = "Newman";
+            sessionUploadInfo.ContactSuffix = "sr";
+            sessionUploadInfo.ContactJobTitle = "developer";
+            sessionUploadInfo.ContactCompanyName = "SAGlobal";
+            sessionUploadInfo.ContactPhone = "123-344-1345";
+            sessionUploadInfo.ContactMobilePhone = "345-344-1984";
+            sessionUploadInfo.ContactEmail = "am_rhoades789@yahoo.com.ccl.org";
+            sessionUploadInfo.ContactAddressLine = "street 1333";
+            sessionUploadInfo.ContactAddressCity = "Cortland";
+            sessionUploadInfo.ContactAddressState = "NY";
+            sessionUploadInfo.ContactAddressZipcode = "13053";
+            sessionUploadInfo.ContactAddressCountry = "USA";
+            sessionUploadInfo.SessionId = "SID-0001047";
+            //sessionUploadInfo.SessionTrackId = "SampleSessionTrackId";
+            sessionUploadInfo.NoteTitle = "title here";
+            sessionUploadInfo.Note = "note here";
+            sessionUploadInfo.OrderId = "OrderId123-4";
+            sessionUploadInfo.ChangeReason = "Change reason for Brian";
+            sessionUploadInfo.TransactionType = "Transfer"; //OR Transfer OR Pending OR Cancel //or new
+            sessionUploadInfo.RegistrationId = "54e6100a-45a4-ea11-b301-00155d6ecefb"; //GUID without curly braces
+
+            array.push(sessionUploadInfo);
+            */
+
+            /*
+            var sessionUploadInfo = new Object();
+            sessionUploadInfo.ContactSalutation = "Mrs";
+            sessionUploadInfo.ContactFirstName = "Jacky";
+            sessionUploadInfo.ContactMiddleName = "B";
+            sessionUploadInfo.ContactLastName = "Bad";
+
+            array.push(sessionUploadInfo);
+            //etc
+
+            */
+            //https://cclwebapidevsag.azurewebsites.net/api/Session/UploadSessionInfo
+
+            if (array != null && array.length > 0)
+            {
+                $.ajax({
+                type: "POST",
+                    url: "/api/Session/UploadSessionInfo",
+                    //url:"https://cclwebapidevsag.azurewebsites.net/api/Session/UploadSessionInfo",
+                    data: JSON.stringify(array),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response)
+                    {
+                        if (response != null)
+                        {
+                            //var responseObject = JSON.parse(response);
+                            //alert(responseObject.Summary);
+                            alert(response.Summary);
+                        }
+                        else
+                        {
+                            alert("Something went wrong");
+                        }
+                    },
+                    failure: function (response)
+                    {
+                        //var responseObject = JSON.parse(response);
+                        //alert(responseObject.Summary);
+                        alert(response.Summary);
+                    },
+                    error: function (response)
+                    {
+                        //var responseObject = JSON.parse(response)
+                        //alert(response.Summary);
+                        alert(response.Summary);
+                    }
+                });
+            }
+        });
+        }); 
+    </script>
+</head>
+<body>
+    <input type="button" id="btnPost" value="Upload test"/>
+</body>
+</html>

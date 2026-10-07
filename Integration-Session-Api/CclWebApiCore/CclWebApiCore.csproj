@@ -1,0 +1,102 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>df291d90-ef75-4329-8493-4f71c78c698d</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Content\bootstrap-theme.css" />
+    <None Remove="Content\bootstrap-theme.css.map" />
+    <None Remove="Content\bootstrap-theme.min.css" />
+    <None Remove="Content\bootstrap-theme.min.css.map" />
+    <None Remove="Content\bootstrap.css" />
+    <None Remove="Content\bootstrap.css.map" />
+    <None Remove="Content\bootstrap.min.css" />
+    <None Remove="Content\bootstrap.min.css.map" />
+    <None Remove="Content\Site.css" />
+    <None Remove="Documentation\FDD033_TechNotes.docx" />
+    <None Remove="Documentation\Notes.txt" />
+    <None Remove="Documentation\Old\UploadTest.html" />
+    <None Remove="fonts\glyphicons-halflings-regular.eot" />
+    <None Remove="fonts\glyphicons-halflings-regular.svg" />
+    <None Remove="fonts\glyphicons-halflings-regular.ttf" />
+    <None Remove="fonts\glyphicons-halflings-regular.woff" />
+    <None Remove="fonts\glyphicons-halflings-regular.woff2" />
+    <None Remove="Scripts\bootstrap.js" />
+    <None Remove="Scripts\bootstrap.min.js" />
+    <None Remove="Scripts\jquery-3.3.1.js" />
+    <None Remove="Scripts\jquery-3.3.1.min.js" />
+    <None Remove="Scripts\jquery-3.3.1.min.map" />
+    <None Remove="Scripts\jquery-3.3.1.slim.js" />
+    <None Remove="Scripts\jquery-3.3.1.slim.min.js" />
+    <None Remove="Scripts\jquery-3.3.1.slim.min.map" />
+    <None Remove="Scripts\modernizr-2.8.3.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\secrets\integration-session-api\integration-session-api-appsettings-prod.json" Link="Secrets\integration-session-api-appsettings-prod.json" />
+    <Content Include="..\..\..\secrets\integration-session-api\integration-session-api-appsettings-qa.json" Link="Secrets\integration-session-api-appsettings-qa.json" />
+    <Content Include="..\..\..\secrets\integration-session-api\integration-session-api-appsettings-uat.json" Link="Secrets\integration-session-api-appsettings-uat.json" />
+    <Content Include="Content\bootstrap-theme.css" />
+    <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Content\bootstrap-theme.min.css" />
+    <Content Include="Content\bootstrap-theme.min.css.map" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.css.map" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\Site.css" />
+    <Content Include="Documentation\FDD033_TechNotes.docx" />
+    <Content Include="Documentation\Notes.txt" />
+    <Content Include="Documentation\Old\UploadTest.html" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\jquery-3.3.1.js" />
+    <Content Include="Scripts\jquery-3.3.1.min.js" />
+    <Content Include="Scripts\jquery-3.3.1.min.map" />
+    <Content Include="Scripts\jquery-3.3.1.slim.js" />
+    <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
+    <Content Include="Scripts\jquery-3.3.1.slim.min.map" />
+    <Content Include="Scripts\modernizr-2.8.3.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
+    <PackageReference Include="CenterForCreativeLeadership.Shared.Logging.Rapid7" Version="1.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.SystemWebAdapters.CoreServices" Version="2.0.0" />
+    <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <!-- CCL health checks (/_liveness, /_health) — net10-compiled -->
+    <PackageReference Include="CenterForCreativeLeadership.Shared.HealthCheck" Version="10.2.0" />
+    <!-- Application Insights: 2.x stays (3.0 throws TypeLoadException with the Kubernetes enricher);
+         Kubernetes 8.0.1 with NO KubernetesClient pin (8.0.1 resolves a non-vulnerable KubernetesClient) -->
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.Kubernetes" Version="8.0.1" />
+    <!-- Pin Microsoft.OpenApi over the vulnerable 2.4.1 pulled transitively by Swashbuckle (GHSA-v5pm-xwqc-g5wc); stay on the 2.x line Swashbuckle 10.x targets (3.x is a breaking rewrite) -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CclCrmProxyCore\CclCrmProxyCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Secrets\" />
+  </ItemGroup>
+
+</Project>

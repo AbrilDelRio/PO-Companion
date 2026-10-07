@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#btnPost").click(function () {
+                var parentTask = new Object();
+                parentTask.ParentTaskId = "d9fef077-cc8b-eb11-a812-000d3a30edd8";
+
+                var test = JSON.stringify(parentTask);
+                console.log(test);
+
+                if (parentTask != null) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/api/Session/CreateSubtasks",
+                        //url:"https://cclwebapidevsag.azurewebsites.net/api/Session/UploadSessionInfo",
+                        //url: "https://api-uat.ccl.org/integration-session/UploadSessionInfo?subscription-key=a56935f4e3be403cbaee3fa7ca607a83",
+                        data: JSON.stringify(parentTask),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (response) {
+                            if (response != null) {
+                                alert(response.Message);
+                            }
+                            else {
+                                alert("Something went wrong");
+                            }
+                        },
+                        failure: function (response) {
+                            alert(response.Message);
+                        },
+                        error: function (response) {
+                            alert(response.Message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Create subtasks</h1>
+    <input type="button" id="btnPost" value="Upload test" />
+</body>
+</html>
