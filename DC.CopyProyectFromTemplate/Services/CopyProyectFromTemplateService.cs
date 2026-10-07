@@ -66,7 +66,7 @@ public sealed class CopyProyectFromTemplateService
         {
             string poCodeConfiguration = poConfiguration.getConfigurationCode(target);
 
-            Entity entityPoConfig = poConfiguration.getPOConfiguration(poCodeConfiguration);
+            Entity? entityPoConfig = poConfiguration.getPOConfiguration(poCodeConfiguration);
 
             if (entityPoConfig == null)
             {

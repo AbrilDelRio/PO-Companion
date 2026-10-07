@@ -28,6 +28,16 @@
     <PackageReference Include="Microsoft.Identity.Client" Version="4.84.2" />
   </ItemGroup>
 
+  <!--
+    net.sf.mpxj has no release with these fixes (its successor is MPXJ.Net). Both flaws are in readers
+    of other formats (Merlin, Primavera P3 PRX, SureTrak STX); MppProjectReader uses MPPReader only, so
+    they cannot be reached. Remove these lines when the project moves to MPXJ.Net 16.5.0 or later.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-5vvx-3h34-f3gj" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-7952-gx68-cjqr" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

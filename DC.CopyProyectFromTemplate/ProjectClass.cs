@@ -10,10 +10,10 @@ namespace DC.CopyProyectFromTemplate
 {
     public class ProjectClass
     {
-        private IOrganizationService service = null;
-        private readonly IOrganizationService sourceService = null;
-        private Helper helper = null;
-        private Helper sourceHelper = null;
+        private IOrganizationService service;
+        private readonly IOrganizationService sourceService;
+        private Helper helper;
+        private Helper sourceHelper;
 
         /// <summary>
         /// "Scheduling Engine" of a Project Operations project. It is chosen when the project is created
@@ -46,7 +46,7 @@ namespace DC.CopyProyectFromTemplate
         /// </summary>
         internal Entity CreateProjectFromSource(List<Entity> entityPo, Guid sourceProjectId, string sourceLookupFieldToExclude, ReferenceResolver resolver)
         {
-            Entity newProject = null;
+            Entity? newProject = null;
 
             try
             {
@@ -168,7 +168,7 @@ namespace DC.CopyProyectFromTemplate
             }
         }
 
-        private static string DescribeDates(Entity project)
+        private static string DescribeDates(Entity? project)
         {
             if (project == null)
             {
@@ -238,7 +238,7 @@ namespace DC.CopyProyectFromTemplate
             {
                 if (option.Label.UserLocalizedLabel.Label.Equals(projectStatus))
                 {
-                    status = (int)option.Value;
+                    status = option.Value ?? status;
                     helper.createLog($"status selected value: {option.Value}", true, null, null);
                     break;
                 }

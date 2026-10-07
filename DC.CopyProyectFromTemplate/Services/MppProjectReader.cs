@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using net.sf.mpxj;
 using net.sf.mpxj.MpxjUtilities;
-using net.sf.mpxj.reader;
+using net.sf.mpxj.mpp;
 using ProjectTask = net.sf.mpxj.Task;
 
 namespace DC.CopyProyectFromTemplate.Services;
@@ -53,7 +53,10 @@ public sealed class MppProjectReader
 
         try
         {
-            project = new UniversalProjectReader().read(filePath);
+            // The MPP reader only: UniversalProjectReader picks a reader from the file's content, and the
+            // readers of other formats (Merlin, Primavera P3, SureTrak) carry the XXE and path traversal
+            // flaws of GHSA-5vvx-3h34-f3gj and GHSA-7952-gx68-cjqr, which net.sf.mpxj 13.x never fixed.
+            project = new MPPReader().read(filePath);
         }
         catch (Exception ex)
         {

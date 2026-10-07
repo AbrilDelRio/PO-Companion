@@ -22,7 +22,7 @@ namespace DC.CopyProyectFromTemplate
         {
             string cacheKey = environmentKey + "|" + logicalName;
 
-            string[] cached;
+            string[]? cached;
             if (CreatableFields.TryGetValue(cacheKey, out cached))
             {
                 return cached;

@@ -8,10 +8,10 @@ namespace DC.CopyProyectFromTemplate
     public class TeamMemberClass
     {
         private readonly Dictionary<Guid, Guid> teamMemberDictionary = new Dictionary<Guid, Guid>();
-        private readonly IOrganizationService service = null;
-        private readonly IOrganizationService sourceService = null;
-        private readonly Helper helper = null;
-        private readonly Helper sourceHelper = null;
+        private readonly IOrganizationService service;
+        private readonly IOrganizationService sourceService;
+        private readonly Helper helper;
+        private readonly Helper sourceHelper;
 
         public TeamMemberClass(IOrganizationService service, string dataverseUrl)
             : this(service, service, dataverseUrl, dataverseUrl)
@@ -122,7 +122,7 @@ namespace DC.CopyProyectFromTemplate
             return ids;
         }
 
-        internal Dictionary<Guid, EntityReference> copyTeamMembers(int copyType, EntityReference projectTemplate, Entity newProject, int copyMode, BatchWriter writer, ReferenceResolver resolver = null)
+        internal Dictionary<Guid, EntityReference> copyTeamMembers(int copyType, EntityReference projectTemplate, Entity newProject, int copyMode, BatchWriter writer, ReferenceResolver? resolver = null)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace DC.CopyProyectFromTemplate
                 // Operations refuses a direct Delete on msdyn_projectteam. Whoever it already carries
                 // (the default project manager, for example) stays, and is reused below instead of
                 // being created twice.
-                Dictionary<Guid, Guid> existingByResource = null;
+                Dictionary<Guid, Guid>? existingByResource = null;
 
                 if (resolver == null)
                 {
@@ -209,7 +209,7 @@ namespace DC.CopyProyectFromTemplate
                         }
 
                         Guid existingTeamMemberId;
-                        if (mappedResource != null && existingByResource.TryGetValue(mappedResource.Id, out existingTeamMemberId))
+                        if (mappedResource != null && existingByResource!.TryGetValue(mappedResource.Id, out existingTeamMemberId))
                         {
                             // Already on the new project: the tasks' assignments will point at it.
                             teamMemberDictionary[team.Id] = existingTeamMemberId;
