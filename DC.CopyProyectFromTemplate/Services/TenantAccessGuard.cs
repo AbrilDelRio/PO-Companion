@@ -21,7 +21,8 @@ public sealed class TenantAccessDeniedException : Exception
 ///
 ///   TenantKeys:{tenantId}   the Function key(s) of that tenant, comma separated (two during a rotation)
 ///
-/// On App Service Linux the separator is "__": TenantKeys__ccfeb871-538f-4f5f-b743-877270df42e1.
+/// On App Service the separator is "__" and a setting name cannot contain "-", so the tenant id is
+/// written without its dashes: TenantKeys__ccfeb871538f4f5fb743877270df42e1. Any GUID format is accepted.
 /// Each key must ALSO exist as a Function App key (App keys → Host keys): the host still checks it
 /// first, and this guard then checks that the environment the request names lives in that key's tenant.
 ///
