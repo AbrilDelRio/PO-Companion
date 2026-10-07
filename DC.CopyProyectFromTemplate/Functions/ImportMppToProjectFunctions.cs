@@ -20,13 +20,15 @@ public sealed class ImportMppToProjectFunctions
     private readonly MppBlobStorage blobStorage;
     private readonly ImportMppToProjectService importService;
     private readonly DataverseTokenProvider tokenProvider;
+    private readonly TenantAccessGuard accessGuard;
     private readonly ILogger<ImportMppToProjectFunctions> logger;
 
-    public ImportMppToProjectFunctions(MppBlobStorage blobStorage, ImportMppToProjectService importService, DataverseTokenProvider tokenProvider, ILogger<ImportMppToProjectFunctions> logger)
+    public ImportMppToProjectFunctions(MppBlobStorage blobStorage, ImportMppToProjectService importService, DataverseTokenProvider tokenProvider, TenantAccessGuard accessGuard, ILogger<ImportMppToProjectFunctions> logger)
     {
         this.blobStorage = blobStorage;
         this.importService = importService;
         this.tokenProvider = tokenProvider;
+        this.accessGuard = accessGuard;
         this.logger = logger;
     }
 
@@ -51,6 +53,8 @@ public sealed class ImportMppToProjectFunctions
             MultipartInput input = await ReadMultipartInputAsync(request, request.FunctionContext.CancellationToken);
 
             storedFile = input.StoredFile;
+
+            await accessGuard.EnsureAllowedAsync(request, input.Environment, request.FunctionContext.CancellationToken);
 
             string correlationId = input.Environment?.CorrelationId ?? Guid.NewGuid().ToString("D");
 
@@ -91,6 +95,15 @@ public sealed class ImportMppToProjectFunctions
                 correlationId);
 
             return await AcceptedResponseBuilder.CreateAsync(request, instanceId, input.Environment, correlationId, logger);
+        }
+        catch (TenantAccessDeniedException ex)
+        {
+            if (storedFile != null)
+            {
+                await blobStorage.DeleteIfExistsAsync(storedFile.ContainerName, storedFile.BlobName);
+            }
+
+            return await CreateErrorResponse(request, HttpStatusCode.Forbidden, ex.Message);
         }
         catch (InvalidDataException ex)
         {

@@ -19,13 +19,15 @@ public sealed class CopyProyectFromTemplateFunctions
     private readonly CopyProyectFromTemplateService copyService;
     private readonly DataverseTokenProvider tokenProvider;
     private readonly DestinationEnvironmentCatalog destinationCatalog;
+    private readonly TenantAccessGuard accessGuard;
     private readonly ILogger<CopyProyectFromTemplateFunctions> logger;
 
-    public CopyProyectFromTemplateFunctions(CopyProyectFromTemplateService copyService,DataverseTokenProvider tokenProvider,DestinationEnvironmentCatalog destinationCatalog,ILogger<CopyProyectFromTemplateFunctions> logger)
+    public CopyProyectFromTemplateFunctions(CopyProyectFromTemplateService copyService,DataverseTokenProvider tokenProvider,DestinationEnvironmentCatalog destinationCatalog,TenantAccessGuard accessGuard,ILogger<CopyProyectFromTemplateFunctions> logger)
     {
         this.copyService = copyService;
         this.tokenProvider = tokenProvider;
         this.destinationCatalog = destinationCatalog;
+        this.accessGuard = accessGuard;
         this.logger = logger;
     }
 
@@ -95,6 +97,15 @@ public sealed class CopyProyectFromTemplateFunctions
         catch (InvalidDataException ex)
         {
             return await CreateBadRequestResponse(request, ex.Message);
+        }
+
+        try
+        {
+            await accessGuard.EnsureAllowedAsync(request, environment, request.FunctionContext.CancellationToken);
+        }
+        catch (TenantAccessDeniedException ex)
+        {
+            return await CreateErrorResponse(request, HttpStatusCode.Forbidden, ex.Message);
         }
 
         ResolvedDataverseEnvironment? destination = null;
@@ -227,9 +238,14 @@ public sealed class CopyProyectFromTemplateFunctions
         }
     }
 
-    private static async Task<HttpResponseData> CreateBadRequestResponse(HttpRequestData request,string message)
+    private static Task<HttpResponseData> CreateBadRequestResponse(HttpRequestData request,string message)
     {
-        HttpResponseData response = request.CreateResponse(HttpStatusCode.BadRequest);
+        return CreateErrorResponse(request, HttpStatusCode.BadRequest, message);
+    }
+
+    private static async Task<HttpResponseData> CreateErrorResponse(HttpRequestData request,HttpStatusCode statusCode,string message)
+    {
+        HttpResponseData response = request.CreateResponse(statusCode);
         response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
         await response.WriteStringAsync(message);
         return response;

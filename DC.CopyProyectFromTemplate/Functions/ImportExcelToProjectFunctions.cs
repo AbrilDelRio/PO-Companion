@@ -20,13 +20,15 @@ public sealed class ImportExcelToProjectFunctions
     private readonly MppBlobStorage blobStorage;
     private readonly ImportExcelToProjectService importService;
     private readonly DataverseTokenProvider tokenProvider;
+    private readonly TenantAccessGuard accessGuard;
     private readonly ILogger<ImportExcelToProjectFunctions> logger;
 
-    public ImportExcelToProjectFunctions(MppBlobStorage blobStorage,ImportExcelToProjectService importService,DataverseTokenProvider tokenProvider,ILogger<ImportExcelToProjectFunctions> logger)
+    public ImportExcelToProjectFunctions(MppBlobStorage blobStorage,ImportExcelToProjectService importService,DataverseTokenProvider tokenProvider,TenantAccessGuard accessGuard,ILogger<ImportExcelToProjectFunctions> logger)
     {
         this.blobStorage = blobStorage;
         this.importService = importService;
         this.tokenProvider = tokenProvider;
+        this.accessGuard = accessGuard;
         this.logger = logger;
     }
 
@@ -51,6 +53,8 @@ public sealed class ImportExcelToProjectFunctions
             MultipartInput input = await ReadMultipartInputAsync(request,request.FunctionContext.CancellationToken);
 
             storedFile = input.StoredFile;
+
+            await accessGuard.EnsureAllowedAsync(request, input.Environment, request.FunctionContext.CancellationToken);
 
             string correlationId = input.Environment?.CorrelationId ?? Guid.NewGuid().ToString("D");
 
@@ -80,6 +84,15 @@ public sealed class ImportExcelToProjectFunctions
                 correlationId);
 
             return await AcceptedResponseBuilder.CreateAsync(request, instanceId, input.Environment, correlationId, logger);
+        }
+        catch (TenantAccessDeniedException ex)
+        {
+            if (storedFile != null)
+            {
+                await blobStorage.DeleteIfExistsAsync(storedFile.ContainerName,storedFile.BlobName);
+            }
+
+            return await CreateErrorResponse(request, HttpStatusCode.Forbidden, ex.Message);
         }
         catch (InvalidDataException ex)
         {

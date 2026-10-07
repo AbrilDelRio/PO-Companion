@@ -16,6 +16,7 @@ public sealed class TestConnectionFunction
     private readonly DataverseTokenProvider tokenProvider;
     private readonly DataverseTenantDiscovery tenantDiscovery;
     private readonly MppBlobStorage blobStorage;
+    private readonly TenantAccessGuard accessGuard;
     private readonly ILogger<TestConnectionFunction> logger;
 
     public TestConnectionFunction(
@@ -23,12 +24,14 @@ public sealed class TestConnectionFunction
         DataverseTokenProvider tokenProvider,
         DataverseTenantDiscovery tenantDiscovery,
         MppBlobStorage blobStorage,
+        TenantAccessGuard accessGuard,
         ILogger<TestConnectionFunction> logger)
     {
         this.connectionFactory = connectionFactory;
         this.tokenProvider = tokenProvider;
         this.tenantDiscovery = tenantDiscovery;
         this.blobStorage = blobStorage;
+        this.accessGuard = accessGuard;
         this.logger = logger;
     }
 
@@ -61,6 +64,18 @@ public sealed class TestConnectionFunction
             badRequest.Headers.Add("Content-Type", "text/plain; charset=utf-8");
             await badRequest.WriteStringAsync(environmentError!);
             return badRequest;
+        }
+
+        try
+        {
+            await accessGuard.EnsureAllowedAsync(request, environment, cancellationToken);
+        }
+        catch (TenantAccessDeniedException ex)
+        {
+            HttpResponseData forbidden = request.CreateResponse(HttpStatusCode.Forbidden);
+            forbidden.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+            await forbidden.WriteStringAsync(ex.Message);
+            return forbidden;
         }
 
         DataverseCredentialPlan? plan = await TestDataverseAsync(checks, environment, cancellationToken);
