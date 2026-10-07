@@ -1,0 +1,11 @@
+.git*
+.vs/
+.vscode/
+bin/
+obj/
+deployment/
+local.settings.json
+local.settings.json.example
+README.md
+CopyProyectFromTemplate.http
+*.sln

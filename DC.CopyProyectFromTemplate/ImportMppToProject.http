@@ -1,0 +1,24 @@
+@baseUrl = http://localhost:7071
+@functionKey =
+@targetProjectId = 00000000-0000-0000-0000-000000000000
+
+### Import a Microsoft Project file
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+### Status of an import: the id comes from the 202 (statusUri is this same address)
+@instanceId = paste-the-id-from-the-202
+GET {{baseUrl}}/api/ImportMppToProject/{{instanceId}}
+x-functions-key: {{functionKey}}

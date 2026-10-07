@@ -1,0 +1,10 @@
+bin/
+obj/
+deployment/
+.vs/
+.vscode/.ropeproject/
+local.settings.json
+*.user
+*.suo
+*.pfx
+*.publishsettings

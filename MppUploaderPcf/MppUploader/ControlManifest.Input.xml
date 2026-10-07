@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control
+    namespace="Mfd.Controls"
+    constructor="MppUploader"
+    version="1.11.0"
+    display-name-key="MppUploader_Display_Name"
+    description-key="MppUploader_Description"
+    control-type="standard">
+
+    <property
+      name="functionUrl"
+      display-name-key="FunctionUrl_Display_Name"
+      description-key="FunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="true" />
+
+    <property
+      name="functionKey"
+      display-name-key="FunctionKey_Display_Name"
+      description-key="FunctionKey_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="copyProjectFunctionUrl"
+      display-name-key="CopyProjectFunctionUrl_Display_Name"
+      description-key="CopyProjectFunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="environmentsFunctionUrl"
+      display-name-key="EnvironmentsFunctionUrl_Display_Name"
+      description-key="EnvironmentsFunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="targetEnvironments"
+      display-name-key="TargetEnvironments_Display_Name"
+      description-key="TargetEnvironments_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="excelFunctionUrl"
+      display-name-key="ExcelFunctionUrl_Display_Name"
+      description-key="ExcelFunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="testConnectionFunctionUrl"
+      display-name-key="TestConnectionFunctionUrl_Display_Name"
+      description-key="TestConnectionFunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="pwaProjectsFunctionUrl"
+      display-name-key="PwaProjectsFunctionUrl_Display_Name"
+      description-key="PwaProjectsFunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="pwaProjectTasksFunctionUrl"
+      display-name-key="PwaProjectTasksFunctionUrl_Display_Name"
+      description-key="PwaProjectTasksFunctionUrl_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="pwaConnectionPageName"
+      display-name-key="PwaConnectionPageName_Display_Name"
+      description-key="PwaConnectionPageName_Description"
+      of-type="SingleLine.Text"
+      usage="input"
+      required="false" />
+
+    <property
+      name="maxFileSizeMb"
+      display-name-key="MaxFileSizeMb_Display_Name"
+      description-key="MaxFileSizeMb_Description"
+      of-type="Whole.None"
+      usage="input"
+      required="false"
+      default-value="210" />
+
+    <property
+      name="requestTimeoutSeconds"
+      display-name-key="RequestTimeoutSeconds_Display_Name"
+      description-key="RequestTimeoutSeconds_Description"
+      of-type="Whole.None"
+      usage="input"
+      required="false"
+      default-value="600" />
+
+    <external-service-usage enabled="true">
+      <domain>dc-copyproyectfromtemplate.azurewebsites.net</domain>
+    </external-service-usage>
+
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/MppUploader.css" order="1" />
+      <resx path="strings/MppUploader.1033.resx" version="1.0.0" />
+      <resx path="strings/MppUploader.3082.resx" version="1.0.0" />
+    </resources>
+
+    <feature-usage>
+      <uses-feature name="WebAPI" required="true" />
+      <uses-feature name="Utility" required="true" />
+    </feature-usage>
+  </control>
+</manifest>

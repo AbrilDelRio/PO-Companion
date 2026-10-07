@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "process",
+      "label": "publish (functions)",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "${workspaceFolder}/DC.CopyProyectFromTemplate.csproj",
+        "--configuration",
+        "Release",
+        "--output",
+        "${workspaceFolder}/bin/Release/net10.0/publish"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

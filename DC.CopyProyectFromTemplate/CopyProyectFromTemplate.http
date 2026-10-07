@@ -1,0 +1,35 @@
+@functionHost = http://localhost:7071
+@functionKey = REPLACE-WITH-YOUR-FUNCTION-KEY
+
+POST {{functionHost}}/api/CopyProyectFromTemplate?code={{functionKey}}
+Content-Type: application/json
+
+{
+  "sourceProjectId": "11111111-1111-1111-1111-111111111111",
+  "targetProjectId": "22222222-2222-2222-2222-222222222222"
+}
+
+###
+
+### Copy a project into ANOTHER environment (new project, new ids). The source is the
+### environment that holds sourceProjectId; no targetProjectId is sent.
+POST {{functionHost}}/api/CopyProyectFromTemplate?code={{functionKey}}
+Content-Type: application/json
+
+{
+  "sourceProjectId": "11111111-1111-1111-1111-111111111111",
+  "environmentUrl": "https://source.crm.dynamics.com",
+  "environmentApiUrl": "https://source.api.crm.dynamics.com",
+  "cloud": "Commercial",
+  "targetEnvironment": {
+    "name": "UAT",
+    "environmentUrl": "https://uat.crm.dynamics.com",
+    "environmentApiUrl": "https://uat.api.crm.dynamics.com",
+    "cloud": "Commercial"
+  }
+}
+
+###
+
+### Destination environments offered to the PCF
+GET {{functionHost}}/api/Environments?code={{functionKey}}

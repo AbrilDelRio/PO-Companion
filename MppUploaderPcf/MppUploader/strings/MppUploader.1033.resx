@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="MppUploader_Display_Name" xml:space="preserve"><value>MPP Uploader</value></data>
+  <data name="MppUploader_Description" xml:space="preserve"><value>Imports project plans and browses projects from a configured Project Online PWA site.</value></data>
+  <data name="FunctionUrl_Display_Name" xml:space="preserve"><value>Azure Function URL</value></data>
+  <data name="FunctionUrl_Description" xml:space="preserve"><value>Full HTTPS URL of the MPP import Azure Function.</value></data>
+  <data name="FunctionKey_Display_Name" xml:space="preserve"><value>Azure Function Key</value></data>
+  <data name="FunctionKey_Description" xml:space="preserve"><value>Optional Function Key sent through the x-functions-key header. Leave empty when the URL already contains ?code=.</value></data>
+  <data name="CopyProjectFunctionUrl_Display_Name" xml:space="preserve"><value>Copy Project Function URL</value></data>
+  <data name="CopyProjectFunctionUrl_Description" xml:space="preserve"><value>Full HTTPS URL used by Import from Project. It may include the ?code= Function Key.</value></data>
+  <data name="EnvironmentsFunctionUrl_Display_Name" xml:space="preserve"><value>Environments Function URL</value></data>
+  <data name="EnvironmentsFunctionUrl_Description" xml:space="preserve"><value>Full HTTPS URL (GET) that returns the destination environments as a JSON array of { name, url }. It may include the ?code= Function Key.</value></data>
+  <data name="TargetEnvironments_Display_Name" xml:space="preserve"><value>Target Environments (JSON)</value></data>
+  <data name="TargetEnvironments_Description" xml:space="preserve"><value>Fallback list used when no Environments Function URL is set. JSON array, e.g. [{"name":"UAT","url":"https://org.crm.dynamics.com"}].</value></data>
+  <data name="ExcelFunctionUrl_Display_Name" xml:space="preserve"><value>Excel Function URL</value></data>
+  <data name="ExcelFunctionUrl_Description" xml:space="preserve"><value>Full HTTPS URL used by Import from Excel. It may include the ?code= Function Key.</value></data>
+  <data name="TestConnectionFunctionUrl_Display_Name" xml:space="preserve"><value>Test Connection Function URL</value></data>
+  <data name="TestConnectionFunctionUrl_Description" xml:space="preserve"><value>Full HTTPS URL of the Test Connection Azure Function. It may include the ?code= Function Key.</value></data>
+  <data name="PwaProjectsFunctionUrl_Display_Name" xml:space="preserve"><value>Project Online Projects Function URL</value></data>
+  <data name="PwaProjectsFunctionUrl_Description" xml:space="preserve"><value>Optional HTTPS endpoint used to load projects from the configured PWA site.</value></data>
+  <data name="PwaProjectTasksFunctionUrl_Display_Name" xml:space="preserve"><value>Project Online Tasks Function URL</value></data>
+  <data name="PwaProjectTasksFunctionUrl_Description" xml:space="preserve"><value>Optional HTTPS endpoint used to load tasks for an expanded Project Online project.</value></data>
+  <data name="PwaConnectionPageName_Display_Name" xml:space="preserve"><value>Project Online Connection Page Name</value></data>
+  <data name="PwaConnectionPageName_Description" xml:space="preserve"><value>Logical name of the Custom Page used to let users authorize their Project Online connection.</value></data>
+  <data name="MaxFileSizeMb_Display_Name" xml:space="preserve"><value>Maximum file size (MB)</value></data>
+  <data name="MaxFileSizeMb_Description" xml:space="preserve"><value>Maximum accepted MPP or Excel file size in megabytes. Default: 210.</value></data>
+  <data name="RequestTimeoutSeconds_Display_Name" xml:space="preserve"><value>Request timeout (seconds)</value></data>
+  <data name="RequestTimeoutSeconds_Description" xml:space="preserve"><value>Maximum time to upload the file and wait for the initial Azure Function response. Default: 600 seconds.</value></data>
+</root>

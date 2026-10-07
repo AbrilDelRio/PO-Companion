@@ -1,0 +1,41 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "FUNCTIONS_REQUEST_BODY_SIZE_LIMIT": "220200960",
+    "MppImportContainer": "mpp-imports",
+    "MppMaxUploadBytes": "220000000",
+    "MppSourceTimeZone": "UTC",
+
+    "//": "Legacy route: used only when the request does not send environmentUrl/environmentApiUrl/cloud.",
+    "DataverseUrl": "https://YOUR-ORGANIZATION.crm.dynamics.com",
+    "DataverseConnectionString": "AuthType=ClientSecret;Url=https://YOUR-ORGANIZATION.crm.dynamics.com;ClientId=YOUR-APPLICATION-ID;ClientSecret=YOUR-CLIENT-SECRET",
+
+    "//per-environment": "Secret path. One block per Dataverse host; it wins whenever ClientSecret or CertificateBase64 exists. On App Service Linux use '__' instead of ':' (DataverseEnvironments__contoso.crm.dynamics.com__TenantId) and Key Vault references for the secrets. Sovereign clouds (GCC High, DoD, China) always use this path.",
+    "DataverseEnvironments:contoso.crm.dynamics.com:TenantId": "00000000-0000-0000-0000-000000000000",
+    "DataverseEnvironments:contoso.crm.dynamics.com:ClientId": "00000000-0000-0000-0000-000000000000",
+    "DataverseEnvironments:contoso.crm.dynamics.com:ClientSecret": "YOUR-CLIENT-SECRET",
+
+    "//gcc-high": "GCC High signs in through login.microsoftonline.us. Certificate credentials are an alternative to ClientSecret.",
+    "DataverseEnvironments:blueorigin.crm.microsoftdynamics.us:TenantId": "00000000-0000-0000-0000-000000000000",
+    "DataverseEnvironments:blueorigin.crm.microsoftdynamics.us:ClientId": "00000000-0000-0000-0000-000000000000",
+    "DataverseEnvironments:blueorigin.crm.microsoftdynamics.us:CertificateBase64": "BASE64-OF-THE-PFX",
+    "DataverseEnvironments:blueorigin.crm.microsoftdynamics.us:CertificatePassword": "PFX-PASSWORD",
+
+    "//federation": "Federated path (option C) for hosts WITHOUT a ClientSecret/CertificateBase64, only for environments of the same Entra cloud the Function runs in: Commercial from the global cloud, GCC High and DoD from Azure Government, China from Azure China. None of the values is a secret. The tenant of each environment is discovered from its 401 challenge. Left empty here on purpose: filled in, it would route every unconfigured host of that cloud through the managed identity.",
+    "DataverseFederation:ClientId": "",
+    "DataverseFederation:ManagedIdentityClientId": "",
+    "//federation-cloud": "Optional. Global, USGov or China: the Entra cloud of this Function's managed identity, which also picks the token exchange audience (api://AzureADTokenExchange, ...USGov, ...China). Empty = detected from WEBSITE_HOSTNAME (*.azurewebsites.us is Azure Government).",
+    "DataverseFederation:Cloud": "",
+
+    "//destination-environments": "Copy between environments. JSON array of the environments a project can be copied TO. It feeds GET /api/Environments (the PCF dropdown) and, when present, is an ALLOW LIST: a copy to any other host is rejected with a 400. The Function needs an application user in each of them. Without this setting the dropdown lists the hosts that have a DataverseEnvironments block and nothing is enforced.",
+    "//environment-discovery": "OPTIONAL. Automatic list of destination environments for ANY tenant, with no list to maintain. EnvironmentDiscovery = PowerPlatformApi makes the Function read the tenant's environments with the Power Platform API, signing in with the credentials it already uses for the environment the control runs in. One step per tenant, by an administrator: .\\Grant-EnvironmentReader.ps1 -TenantId <tenant> -AppId <client id> -Apply (gives that app registration the read-only 'Power Platform reader' role). While it is on, DestinationEnvironments is NOT used, and the discovered list is also the list of ALLOWED destinations (if it cannot be read, copies are refused). Set it back to Off or remove it to return to the manual list.",
+    "EnvironmentDiscovery": "Off",
+    "EnvironmentDiscoveryTypes": "Production,Sandbox",
+    "EnvironmentDiscoveryCacheMinutes": "10",
+    "//EnvironmentDiscoveryApiUrl": "Only for other clouds (default https://api.powerplatform.com).",
+
+    "DestinationEnvironments": "[{\"name\":\"UAT\",\"url\":\"https://uat.crm.dynamics.com\"},{\"name\":\"Production\",\"url\":\"https://prod.crm.dynamics.com\"}]"
+  }
+}

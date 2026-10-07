@@ -1,0 +1,23 @@
+{
+  "name": "mpp-uploader-pcf",
+  "version": "1.9.0",
+  "description": "PCF control that imports project plans and browses projects from a configured Project Online PWA site.",
+  "scripts": {
+    "build": "pcf-scripts build",
+    "clean": "pcf-scripts clean",
+    "rebuild": "pcf-scripts rebuild",
+    "start": "pcf-scripts start",
+    "start:watch": "pcf-scripts start watch"
+  },
+  "devDependencies": {
+    "@microsoft/eslint-plugin-power-apps": "0.5.1",
+    "@types/node": "^24.0.0",
+    "@types/powerapps-component-framework": "1.3.18",
+    "eslint": "^9.39.0",
+    "globals": "17.11.0",
+    "pcf-scripts": "1.51.1",
+    "pcf-start": "^1.51.1",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "8.67.0"
+  }
+}

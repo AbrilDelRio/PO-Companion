@@ -1,0 +1,268 @@
+@baseUrl = http://localhost:7071
+@functionKey =
+@targetProjectId = 00000000-0000-0000-0000-000000000000
+@sourceProjectId = 11111111-1111-1111-1111-111111111111
+
+# Commercial
+@envUrl = https://contoso.crm.dynamics.com
+@envApiUrl = https://contoso.api.crm.dynamics.com
+@cloud = Commercial
+
+# GCC High
+@envUrlHigh = https://blueorigin.crm.microsoftdynamics.us
+@envApiUrlHigh = https://blueorigin.api.crm.microsoftdynamics.us
+
+
+### 1. Legacy: no routing fields. Must behave exactly as before.
+###    Expected: 202. Log line "did not declare environmentApiUrl / environmentUrl / cloud".
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 2. Commercial, routed.
+###    Expected: 202 with id / statusUri / accepted / environment / cloud / correlationId.
+###    statusUri is this same route plus the id; see 2b.
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+{{envUrl}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentApiUrl"
+
+{{envApiUrl}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="cloud"
+
+{{cloud}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 2b. Status of that import: GET on the same endpoint with the id from the 202, same key.
+###     Expected: 202 while it runs, 200 with runtimeStatus / output / error once it finished.
+###     An id started by another endpoint, or an unknown one, answers 404.
+@instanceId = paste-the-id-from-the-202
+GET {{baseUrl}}/api/ImportMppToProject/{{instanceId}}
+x-functions-key: {{functionKey}}
+
+
+### 3. GCC High.
+###    Expected: 202, and the log shows authority https://login.microsoftonline.us/{tenant}
+###    plus "Dataverse token acquired for blueorigin.crm.microsoftdynamics.us (GCCHigh)".
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+{{envUrlHigh}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentApiUrl"
+
+{{envApiUrlHigh}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="cloud"
+
+GCCHigh
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 4. Mismatch: GCC High host declared as Commercial.
+###    Expected: 400 text/plain naming both sides, assuming neither.
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+{{envUrlHigh}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentApiUrl"
+
+{{envApiUrlHigh}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="cloud"
+
+Commercial
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 5. GCC vs Commercial ordering: .crm9.dynamics.com must resolve to GCC, not Commercial.
+###    Expected: 400 saying the host is GCC while cloud declares Commercial.
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+https://contoso.crm9.dynamics.com
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentApiUrl"
+
+https://contoso.api.crm9.dynamics.com
+--DCMPPBoundary
+Content-Disposition: form-data; name="cloud"
+
+Commercial
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 6. Incomplete: environmentUrl without cloud.
+###    Expected: 400 "The environment routing fields are incomplete: cloud missing".
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+{{envUrl}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 7. Named environment with no credentials in app settings.
+###    Expected: 400 "No credentials are configured for the Dataverse environment
+###    'unknown.crm.dynamics.com'". It must NOT fall back to the default environment.
+POST {{baseUrl}}/api/ImportMppToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCMPPBoundary
+
+--DCMPPBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+https://unknown.crm.dynamics.com
+--DCMPPBoundary
+Content-Disposition: form-data; name="environmentApiUrl"
+
+https://unknown.api.crm.dynamics.com
+--DCMPPBoundary
+Content-Disposition: form-data; name="cloud"
+
+Commercial
+--DCMPPBoundary
+Content-Disposition: form-data; name="file"; filename="Project.mpp"
+Content-Type: application/vnd.ms-project
+
+< ./Project.mpp
+--DCMPPBoundary--
+
+
+### 8. Same routing on the Excel endpoint.
+POST {{baseUrl}}/api/ImportExcelToProject
+x-functions-key: {{functionKey}}
+Content-Type: multipart/form-data; boundary=DCXLSBoundary
+
+--DCXLSBoundary
+Content-Disposition: form-data; name="targetProjectId"
+
+{{targetProjectId}}
+--DCXLSBoundary
+Content-Disposition: form-data; name="environmentUrl"
+
+{{envUrl}}
+--DCXLSBoundary
+Content-Disposition: form-data; name="environmentApiUrl"
+
+{{envApiUrl}}
+--DCXLSBoundary
+Content-Disposition: form-data; name="cloud"
+
+{{cloud}}
+--DCXLSBoundary
+Content-Disposition: form-data; name="file"; filename="Project.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< ./Project.xlsx
+--DCXLSBoundary--
+
+
+### 9. Copy endpoint: same three fields, as optional JSON properties.
+POST {{baseUrl}}/api/CopyProyectFromTemplate
+x-functions-key: {{functionKey}}
+Content-Type: application/json
+
+{
+  "sourceProjectId": "{{sourceProjectId}}",
+  "targetProjectId": "{{targetProjectId}}",
+  "environmentUrl": "{{envUrl}}",
+  "environmentApiUrl": "{{envApiUrl}}",
+  "cloud": "{{cloud}}"
+}
+
+
+### 10. Connectivity check against one specific environment (no import needed).
+###     Expected: 200 with environment / cloud / authority in the body.
+GET {{baseUrl}}/api/TestConnection?environmentUrl={{envUrlHigh}}&environmentApiUrl={{envApiUrlHigh}}&cloud=GCCHigh
+x-functions-key: {{functionKey}}
+
+
+### 11. Same check on the legacy environment (no query string).
+GET {{baseUrl}}/api/TestConnection
+x-functions-key: {{functionKey}}
