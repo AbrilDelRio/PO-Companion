@@ -1,5 +1,7 @@
 using System.Text.Json;
+using DC.CopyProyectFromTemplate.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace DC.CopyProyectFromTemplate.Services;
 
@@ -18,6 +20,10 @@ public sealed record CatalogView(IReadOnlyList<DestinationEnvironment> Environme
 /// 400, so a caller cannot aim the Function's application users at an arbitrary environment.
 /// When it is absent the list falls back to the hosts that have a block under DataverseEnvironments
 /// (listing only; nothing is enforced, as environments served by the federated path need no block).
+///
+/// Whatever the source of the list, a request that names its environment only sees, and can only copy
+/// to, the environments of that environment's own tenant (read from each environment's 401 challenge
+/// and cached). One setting can therefore hold the environments of every customer.
 /// </summary>
 public sealed class DestinationEnvironmentCatalog
 {
@@ -30,16 +36,24 @@ public sealed class DestinationEnvironmentCatalog
 
     private readonly Lazy<Catalog> catalog;
     private readonly PowerPlatformEnvironmentDiscovery? discovery;
+    private readonly DataverseTenantDiscovery? tenantDiscovery;
+    private readonly ILogger<DestinationEnvironmentCatalog>? logger;
 
     /// <summary>
     /// Nothing is read or parsed here on purpose: this class is injected into the copy endpoint, so a
     /// malformed DestinationEnvironments setting must only fail the requests that USE the catalog
     /// (GET Environments, copy to another environment), never the existing same-environment copy.
     /// </summary>
-    public DestinationEnvironmentCatalog(IConfiguration configuration, PowerPlatformEnvironmentDiscovery? discovery = null)
+    public DestinationEnvironmentCatalog(
+        IConfiguration configuration,
+        PowerPlatformEnvironmentDiscovery? discovery = null,
+        DataverseTenantDiscovery? tenantDiscovery = null,
+        ILogger<DestinationEnvironmentCatalog>? logger = null)
     {
         catalog = new Lazy<Catalog>(() => Load(configuration));
         this.discovery = discovery;
+        this.tenantDiscovery = tenantDiscovery;
+        this.logger = logger;
     }
 
     /// <summary>
@@ -64,16 +78,136 @@ public sealed class DestinationEnvironmentCatalog
             return new CatalogView(found, true, "discovery");
         }
 
-        return new CatalogView(Environments, IsEnforced, IsEnforced ? "setting" : "registry");
+        IReadOnlyList<DestinationEnvironment> environments = Environments;
+
+        if (source != null && tenantDiscovery != null)
+        {
+            environments = await KeepSameTenantAsync(source, environments, cancellationToken);
+        }
+
+        return new CatalogView(environments, IsEnforced, IsEnforced ? "setting" : "registry");
     }
 
-    /// <summary>Same rule as <see cref="IsAllowed"/>, but with the list that applies to this request.</summary>
+    /// <summary>
+    /// Same rule as <see cref="IsAllowed"/>, but with the list that applies to this request. A destination in
+    /// another tenant than the source is refused even when no list is enforced.
+    /// </summary>
     public async Task<bool> IsAllowedAsync(ResolvedDataverseEnvironment? source, string host, CancellationToken cancellationToken)
     {
         CatalogView view = await GetAsync(source, false, cancellationToken);
 
-        return !view.IsEnforced || view.Environments.Any(environment =>
+        bool listed = !view.IsEnforced || view.Environments.Any(environment =>
             string.Equals(HostOf(environment.Url), host, StringComparison.OrdinalIgnoreCase));
+
+        // An enforced list is already reduced to the source's tenant (the discovered one is that tenant's own).
+        if (!listed || view.IsEnforced || source == null || tenantDiscovery == null)
+        {
+            return listed;
+        }
+
+        string sourceTenant = await TenantOfSourceAsync(source, cancellationToken);
+        string? destinationTenant = await TryTenantOfAsync($"https://{host}", source.CorrelationId, cancellationToken);
+
+        return string.Equals(sourceTenant, destinationTenant, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// The entries whose tenant is the source's. An entry whose tenant cannot be read is left out (fail
+    /// closed); the source's own tenant must be readable, or the whole request fails.
+    /// </summary>
+    private async Task<IReadOnlyList<DestinationEnvironment>> KeepSameTenantAsync(
+        ResolvedDataverseEnvironment source,
+        IReadOnlyList<DestinationEnvironment> environments,
+        CancellationToken cancellationToken)
+    {
+        string sourceTenant = await TenantOfSourceAsync(source, cancellationToken);
+
+        (DestinationEnvironment Environment, string? TenantId)[] tenants = await Task.WhenAll(environments.Select(async environment =>
+            (environment, await TryTenantOfAsync(environment.Url, source.CorrelationId, cancellationToken))));
+
+        List<DestinationEnvironment> kept = tenants
+            .Where(entry => string.Equals(entry.TenantId, sourceTenant, StringComparison.OrdinalIgnoreCase))
+            .Select(entry => entry.Environment)
+            .ToList();
+
+        logger?.LogInformation(
+            "Destination environments for {Host} (tenant {TenantId}): {Kept} of {Total} in the same tenant.",
+            source.Host,
+            sourceTenant,
+            kept.Count,
+            environments.Count);
+
+        return kept;
+    }
+
+    private async Task<string> TenantOfSourceAsync(ResolvedDataverseEnvironment source, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return (await tenantDiscovery!.DiscoverAsync(source, cancellationToken)).TenantId;
+        }
+        catch (Exception ex) when (ex is InvalidDataException or InvalidOperationException)
+        {
+            throw new EnvironmentDiscoveryException(
+                $"The tenant of the source environment '{source.Host}' could not be read, so no destination can be offered. {ex.Message}",
+                ex);
+        }
+    }
+
+    private async Task<string?> TryTenantOfAsync(string url, string correlationId, CancellationToken cancellationToken)
+    {
+        ResolvedDataverseEnvironment? environment = ToResolved(url, correlationId);
+
+        if (environment == null)
+        {
+            logger?.LogWarning("Destination '{Url}' is not a Dataverse environment URL; it is not offered.", url);
+            return null;
+        }
+
+        try
+        {
+            return (await tenantDiscovery!.DiscoverAsync(environment, cancellationToken)).TenantId;
+        }
+        catch (Exception ex) when (ex is InvalidDataException or InvalidOperationException)
+        {
+            logger?.LogWarning(
+                "The tenant of destination {Host} could not be read; it is not offered. Cause: {Cause}",
+                environment.Host,
+                ex.Message);
+
+            return null;
+        }
+    }
+
+    /// <summary>Builds the environment from its URL alone: the API host and the cloud follow from the host.</summary>
+    private static ResolvedDataverseEnvironment? ToResolved(string url, string correlationId)
+    {
+        string? host = HostOf(url);
+
+        if (host == null || !DataverseClouds.TryResolveFromHost(host, out DataverseCloud cloud, out _))
+        {
+            return null;
+        }
+
+        string[] labels = host.Split('.');
+        string apiHost = labels.Length > 1 && labels[1] == "api"
+            ? host
+            : string.Join('.', new[] { labels[0], "api" }.Concat(labels.Skip(1)));
+        string environmentHost = labels.Length > 1 && labels[1] == "api"
+            ? string.Join('.', new[] { labels[0] }.Concat(labels.Skip(2)))
+            : host;
+
+        DataverseEnvironmentTarget target = new DataverseEnvironmentTarget
+        {
+            EnvironmentUrl = $"https://{environmentHost}",
+            EnvironmentApiUrl = $"https://{apiHost}",
+            Cloud = DataverseClouds.GetName(cloud),
+            CorrelationId = correlationId
+        };
+
+        return DataverseEnvironmentResolver.TryResolve(target, out ResolvedDataverseEnvironment? resolved, out _)
+            ? resolved
+            : null;
     }
 
     public IReadOnlyList<DestinationEnvironment> Environments => catalog.Value.Environments;

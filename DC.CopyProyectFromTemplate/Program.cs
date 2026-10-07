@@ -9,6 +9,7 @@ builder.ConfigureFunctionsWebApplication();
 
 builder.Services.AddSingleton<DataverseEnvironmentRegistry>();
 builder.Services.AddSingleton<DataverseTenantDiscovery>();
+builder.Services.AddSingleton<TenantAccessGuard>();
 builder.Services.AddSingleton<DataverseTokenProvider>();
 builder.Services.AddSingleton<DataverseConnectionFactory>();
 builder.Services.AddSingleton<DiscoveryTokenFactory>(services =>

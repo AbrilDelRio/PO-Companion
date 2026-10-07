@@ -19,15 +19,18 @@ public sealed class EnvironmentsFunction
 {
     private readonly DestinationEnvironmentCatalog catalog;
     private readonly DataverseTokenProvider tokenProvider;
+    private readonly TenantAccessGuard accessGuard;
     private readonly ILogger<EnvironmentsFunction> logger;
 
     public EnvironmentsFunction(
         DestinationEnvironmentCatalog catalog,
         DataverseTokenProvider tokenProvider,
+        TenantAccessGuard accessGuard,
         ILogger<EnvironmentsFunction> logger)
     {
         this.catalog = catalog;
         this.tokenProvider = tokenProvider;
+        this.accessGuard = accessGuard;
         this.logger = logger;
     }
 
@@ -60,6 +63,8 @@ public sealed class EnvironmentsFunction
                 source = await EnvironmentRouting.ResolveAsync(target, tokenProvider, logger, cancellationToken);
             }
 
+            await accessGuard.EnsureAllowedAsync(request, source, cancellationToken);
+
             CatalogView view = await catalog.GetAsync(source, refresh, cancellationToken);
 
             HttpResponseData ok = request.CreateResponse(System.Net.HttpStatusCode.OK);
@@ -75,6 +80,10 @@ public sealed class EnvironmentsFunction
         catch (InvalidDataException ex)
         {
             return await Fail(request, System.Net.HttpStatusCode.BadRequest, ex.Message);
+        }
+        catch (TenantAccessDeniedException ex)
+        {
+            return await Fail(request, System.Net.HttpStatusCode.Forbidden, ex.Message);
         }
         catch (EnvironmentDiscoveryException ex)
         {
