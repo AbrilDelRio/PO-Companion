@@ -38,8 +38,8 @@
 
     "//tenant-isolation": "Whatever its source, the destination list a request sees, and the destinations it can copy to, are only those in the same tenant as the environment the control runs in (read from each environment's 401 challenge and cached). One DestinationEnvironments list can hold every customer's environments.",
 
-    "//tenant-keys": "OPTIONAL, recommended when several customers share this Function. One entry per customer tenant: TenantKeys:{tenantId} = that customer's Function key(s), comma separated (two during a rotation). Create each key in the Function App first (App keys > Host keys > New host key). While at least one entry exists, a request is refused (403) unless its key belongs to the tenant of the environment it names, and requests that name no environment (legacy route) are refused. On App Service Linux use '__': TenantKeys__ccfeb871-538f-4f5f-b743-877270df42e1. Remove every entry to turn it off.",
-    "TenantKeys:00000000-0000-0000-0000-000000000000": "",
+    "//tenant-keys": "OPTIONAL, recommended when several customers share this Function. One entry per customer tenant: TenantKeys:{tenantId} = that customer's Function key(s), comma separated (two during a rotation). Create each key in the Function App first (App keys > Host keys > New host key). While at least one entry exists, a request is refused (403) unless its key belongs to the tenant of the environment it names, and requests that name no environment (legacy route) are refused. On App Service use '__' and write the tenant id WITHOUT dashes (setting names cannot contain '-'): TenantKeys__ccfeb871538f4f5fb743877270df42e1. Remove every entry to turn it off.",
+    "TenantKeys:00000000000000000000000000000000": "",
 
     "DestinationEnvironments":"[{\"name\":\"UAT\",\"url\":\"https://uat.crm.dynamics.com\"},{\"name\":\"Production\",\"url\":\"https://prod.crm.dynamics.com\"}]"
   }
